@@ -1,0 +1,29 @@
+# vikunja
+# https://vikunja.io/docs/full-docker-example/#example-without-any-proxy
+# Docs: http://192.168.1.###:3456/api/v1/docs
+version: '3'
+
+services:
+  api:
+    image: vikunja/api:latest
+    container_name: vikunja-api
+    environment:
+#      VIKUNJA_DATABASE_PORT: 9906
+      VIKUNJA_DATABASE_HOST: '192.168.1.###:9906'
+      VIKUNJA_DATABASE_PASSWORD: <secret password here>
+      VIKUNJA_DATABASE_TYPE: mysql
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_DATABASE: vikunja
+    ports:
+      - 3456:3456
+    volumes:
+      - <path to vikunja files>/files:/app/vikunja/files
+    restart: unless-stopped
+  frontend:
+    image: vikunja/frontend:latest
+    container_name: vikunja-fe
+    ports:
+      - 8040:80
+    environment:
+      VIKUNJA_API_URL: http://192.168.1.###:3456/api/v1
+    restart: unless-stopped
