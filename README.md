@@ -10,21 +10,19 @@ After a bit of trial and error, I figured out how to get the API forwarded throu
 >   Disclaimer: I don't claim that this is the best method. It's just the one that worked for me.
 
 Here's what I did:
-1. Set up the Vikunja Docker stack/container.
-2. Verify that you can log in and use Vikunja through the IP used for setup.
-3. Create your Proxy Host within NPM and point it to whatever URL you plan to use and verify that the page will pull up in your browser. Do not bother trying to log in. It won't work. (Trust me.)
-4. Next, you need to edit some of the NPM files directly. For this, you'll need to know the container name for your NPM installation. I used NGINX-PM, as you see below. From the command line, enter `sudo docker exec -it NGINX-PM /bin/bash`.
-5. Navigate to the proxy hosts folder where the `.conf` files are stashed. In my case, the directory is: `/data/nginx/proxy_host`. Inside this folder, you'll see files for each of your Proxy Hosts. (They're numbered, not named. So, you'll have to `cat` each of them to find the correct file to edit. What you're looking for is a `server_name` that matches your Vikunja Proxy Host.)
-Once found, edit the file to add the following. (You don't need to change anything in the following)
+1. Create a standard Proxy Host for the Vikunja Frontend within NPM and point it to the URL you plan to use. The next several steps will enable the Proxy Host to successfully navigate to the API (on port 3456).
+2. Verify that the page will pull up in your browser. (Do not bother trying to log in. It won't work. Trust me.)
+3. Now, we'll work with the NPM container, so you need to identify the container name for your NPM installation. e.g. NGINX-PM
+4. From the command line, enter `sudo docker exec -it [NGINX-PM container name] /bin/bash` and navigate to the proxy hosts folder where the `.conf` files are stashed. Probably `/data/nginx/proxy_host`. (This folder is a persistent folder created in the NPM container and mounted by NPM.)
+5. Locate the `.conf` file where the server_name inside the file matches your Vikunja Proxy Host. Once found, add the following code, unchanged, just above the existing location block in that file. (They are listed by number, not name.)  
 ```
 location ~* ^/(api|dav|\.well-known)/ {
         proxy_pass http://api:3456;
         client_max_body_size 20M;
     }
 ```
-I added these lines just above the other `location` block and ensured that the spacing and indents matched.
-6. After saving the edited file, return to NPM's browser window and refresh the page. Ensure your Proxy Host for Vikunja is still online.
-7. The last step is to return to the Vikunja web page and adjust the address in the top of the login subscreen. Initially it will say "Sign in to your Vikunja account on" and your IPAddress:3456. It needs to be changed to `[YourDomanain]/api/v1`. Upon clicking the "Change" button, you'll be greeted by a green banner telling you the connection was successful.
-8. And finally, you can log in and start using Vikunja.
+6. After saving the edited file, return to NPM's UI browser window and refresh the page to verify your Proxy Host for Vikunja is still online. 
+7. Now, switch over to your Vikunja browswer window and hit refresh. If you configured your URL correctly in original Vikunja container, you should be all set and the browser will correctly show Vikunja. If not, you'll need to adjust the address in the top of the login subscreen to match your proxy address.
+
 
 If you have questions, let me know and I'll try to help you solve them. I'm sure there are easier ways to do this, but this definitely worked for me.
